@@ -15,9 +15,7 @@ const ROOT_PATH: &str = r"C:\Users\x558899\Documents\Termos de Folhas scaneadas"
  
 fn build_tree() -> io::Result<(Tree<String, NodeTermo>, String)> {
     let mut tree: Tree<String, NodeTermo> = Tree::new(Some("Files Tree"));
- 
-    // The full path string doubles as the node's unique ID and as the value
-    // we hand back to ourselves so children know who their parent node is.
+
     let root_id = tree
         .add_node(
             Node::new(ROOT_PATH.to_string(), Some( NodeTermo { termo: Termo::new(), path: ROOT_PATH.to_string() ,depth: 0, dir: true})),
@@ -30,10 +28,6 @@ fn build_tree() -> io::Result<(Tree<String, NodeTermo>, String)> {
     Ok((tree, root_id))
 }
  
-/// Walks dir and attaches every entry it finds as a child of parent_id.
-/// When an entry is itself a directory, we recurse into it using the node
-/// we just created as the new parent — this is what actually produces the
-/// hierarchy instead of a flat list.
 fn add_children(
     dir: &Path,
     parent_id: &String,
@@ -46,12 +40,12 @@ fn add_children(
         let path_str = path.display().to_string();
         let name = entry.file_name().to_string_lossy().to_string();
         let is_dir = path.is_dir();
-        println!("{:?}", entry);
+        println!("{}", entry.path().as_path().to_string_lossy());
  
         let node_id = tree
             .add_node(
-                Node::new(path_str, Some(NodeTermo { termo: Termo::new(), path: name, depth: prof, dir: is_dir })),
-                Some(parent_id), // <-- attached to its real parent, not root
+                Node::new(entry.path().as_path().to_string_lossy().to_string(), Some(NodeTermo { termo: Termo::new(), path: name, depth: prof, dir: is_dir })),
+                Some(parent_id), 
             )
             .expect("failed to add node");
  
@@ -77,29 +71,49 @@ fn print_tree(tree: &Tree<String, NodeTermo>, root_id: &String) {
         });
 }
 
-fn save_as_json(tree: Tree<String, NodeTermo>, /*root_id: &String*/) {
+fn save_as_json(tree: Tree<String, NodeTermo>, name: &str/*root_id: &String*/) {
     let tree_ser = serde_json::to_string_pretty(&tree);
-    if tree_ser.is_ok() {
-        println!("{}", tree_ser.as_ref().ok().unwrap())
-    };
+    //if tree_ser.is_ok() {
+    //    println!("{}", tree_ser.as_ref().ok().unwrap())
+    //};
 
-    let mut f = File::create("mds.json").expect("mds");
+    let mut f = File::create(name).expect("mds");
 
-    fs::write("mds.json", tree_ser.expect("nus"));
-
-
-    //tree.traverse(root_id, TraversalStrategy::PreOrder)
-    //    .unwrap()
-    //    .iter()
-    //    .for_each(|node_id| {
-    //        let node = tree.get_node_by_id(node_id).unwrap();
-    //        let node_ser = serde_json::to_string(&node)
-    //    })
+    fs::write(name, tree_ser.expect("nus"));
 }
+
+fn get_from_json() -> io::Result<Tree<String, NodeTermo>>{
+    let pai = Path::new(r"C:\Users\x558899\Documents\code\rust\rust-learn\p1.json");
+    let mut file = File::open(pai);
+
+    let mut contents = String::new();
+    file?.read_to_string(&mut contents)?;
+
+    let p: Tree<String, NodeTermo> = serde_json::from_str(&contents)?;
+
+    //print_tree(&p, &ROOT_PATH.to_string());
+    save_as_json(p.clone(), "p2.json");
+    Ok(p)
+}
+
+
+fn cmp_trees(l: Tree<String, NodeTermo>, r: Tree<String, NodeTermo>){
+    let lsize = l.get_nodes().len();
+    let rsize = r.get_nodes().len();
+
+    if lsize > rsize{
+        save_as_json(l, "update.json")
+    } else {
+        unimplemented!();
+    }
+
+}
+
  
 fn main() {
     match build_tree() {
-        Ok((tree, _root_id)) => save_as_json(tree)/*print_tree(&tree, &root_id)*/,
+        Ok((tree, _root_id)) => save_as_json(tree, "p1.json")/*print_tree(&tree, &root_id)*/,
         Err(e) => eprintln!("Failed to walk directory: {e}"),
     }
+    get_from_json().expect("nn foi");
 }
