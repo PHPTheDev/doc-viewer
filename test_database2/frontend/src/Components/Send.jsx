@@ -1,10 +1,6 @@
 import {useState, useRef } from 'react';
 import './Send.css'
-import Axios from 'axios';
-import api from '../lib/axios';
-
-
-
+import axios from 'axios';
 
 export default function Send() {
 
@@ -12,8 +8,21 @@ export default function Send() {
 	const rfRef = useRef(null);
 	const setorRef = useRef(null);
 
- 	const button = (e) => {
- 		console.log(nameRef.current.value);
+ 	const button = async (e) => {
+ 		try {
+ 			const response = await axios.post(
+ 				"http://127.0.0.1:3000",{
+ 				"nome": `${nameRef.current.value}`,
+ 				"rf": `${rfRef.current.value}`,
+ 				"setorRef": `${setorRef.current.value}`
+ 				}
+ 			);
+ 		console.log(response.data);
+ 		}
+ 		catch(error) {
+ 			console.log(error);
+ 		} 
+ 		
  	}
 
 
