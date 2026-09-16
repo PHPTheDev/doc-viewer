@@ -165,6 +165,7 @@ dependencies = [
  "serde_json",
  "sqlite",
  "tokio",
+ "tower",
  "tower-http",
 ]
 
@@ -1243,10 +1244,12 @@ dependencies = [
  "bitflags",
  "bytes",
  "http",
+ "http-body",
  "percent-encoding",
  "pin-project-lite",
  "tower-layer",
  "tower-service",
+ "tracing",
 ]
 
 [[package]]

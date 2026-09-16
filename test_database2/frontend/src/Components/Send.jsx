@@ -14,13 +14,14 @@ export default function Send() {
  				"http://127.0.0.1:3000",{
  				"nome": `${nameRef.current.value}`,
  				"rf": `${rfRef.current.value}`,
- 				"setorRef": `${setorRef.current.value}`
+ 				"setor": `${setorRef.current.value}`
  				}
  			);
  		console.log(response.data);
  		}
  		catch(error) {
  			console.log(error);
+ 			console.log("explodiu")
  		} 
  		
  	}
