@@ -1,4 +1,4 @@
-use axum::{routing::post, Router};
+use axum::{routing::{post, get}, Router};
 use http::{Request, Response, Method, header};
 use tower_http::trace::TraceLayer;
 use tower_http::cors::{Any, CorsLayer};
@@ -18,6 +18,8 @@ async fn main() {
 
     let app = Router::new()
                       .route("/", post(users::serializer::json))
+                      .route("/users/{id}", get(users::routes::get_termo))
+                      .route("/users", get(users::routes::get_termos))
                       .layer(ServiceBuilder::new().layer(cors));
 
 

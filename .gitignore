@@ -1,3 +1,4 @@
 /target
 /api/target
+/api/*db
 *.json

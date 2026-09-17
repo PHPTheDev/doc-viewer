@@ -1,7 +1,8 @@
 use iced;
 use iced::Task;
-use iced::{Element, Length, Border, Shadow};
-use iced::widget::{Row, Column, button, row, column, text, scrollable};
+use iced::{Element, Length, Border, Shadow, Color};
+use iced::widget::{Row, Column, button, row, center, container, mouse_area, opaque, column, operation, space, stack,
+    text, text_input, scrollable};
 use tree_ds::prelude::*;
 pub mod data;
 pub mod saver;
@@ -12,9 +13,11 @@ use crate::data::tree::build_tree;
 const ROOT_PATH: &str = r"C:\Users\x558899\Documents\Termos de Folhas scaneadas";
 
 #[derive(Default)]
-struct App{
+struct App<'a>{
     value: i32,
     items: Vec<String>,
+    show_modal: bool,   
+    lol: &'a str,
 
 }
 
@@ -22,12 +25,18 @@ struct App{
 enum Message{
     Increment,
     AddRItem,
-    ItemPressed(usize),
+    ItemPressed(usize),    
+    ShowModal,
+    HideModal,
 }
 
 fn dir_button_style() -> impl Fn(&iced::Theme, button::Status) -> button::Style {
     |_t, _e| button::Style {
-        background: None,
+        background: Some(iced::Background::from(iced::Color::from_rgb(
+            238.0 / 255.0,
+            242.0 / 255.0,
+            118.0 / 255.0,
+        ))),
         text_color: iced::Color::from_rgb(
             3.0 / 255.0,
             161.0 / 255.0,
@@ -39,7 +48,7 @@ fn dir_button_style() -> impl Fn(&iced::Theme, button::Status) -> button::Style 
     }
 }
 
-impl App{
+impl<'a> App<'a>{
 
 
 
@@ -65,6 +74,10 @@ impl App{
             })
     }
 
+    // async fn get_termos_db() -> Column<'static, Message> {
+        
+    // }
+
     fn update(&mut self, message: Message) -> Task<Message>{
         match message{
             Message::Increment => {
@@ -77,11 +90,19 @@ impl App{
                 // Handle individual dynamic widget events
                 ();
             }
+            Message::ShowModal => {
+                self.show_modal = true;
+                //operation::focus_next::<T>();
+            }
+            Message::HideModal => {
+                self.hide_modal();
+                //Task::none();
+            }
         }
         Task::none()
     }
 
-    fn view(&self) -> Row<'_, Message> {
+    fn view(&self) -> Element<'_, Message> {
 
         let increment = button("+").on_press(Message::Increment);
 
@@ -94,19 +115,68 @@ impl App{
                 col.push(button(text(item.clone())).on_press(Message::ItemPressed(i)))
             });
 
-       row![scrollable(Self::new_tree()), column![
+       let interface = row![scrollable(Self::new_tree()), column![
             button("Add Widget").on_press(Message::AddRItem),
+            center(button(text("Show Modal")).on_press(Message::ShowModal)),
             increment,
             counter,
             children]
 
-            ].width(Length::Fill)
+            ].width(Length::Fill);
+
+        if self.show_modal {
+             let signup = container(
+                column![
+                    text("Sign Up").size(24),
+                    column![
+                        column![
+                            text("Email").size(12),
+                            text_input("", self.lol)
+                                //.on_input(Message::Email)
+                                //.on_submit(Message::Submit)
+                                .padding(5),
+                        ]
+                        .spacing(5),
+                        column![
+                            text("Password").size(12),
+                            text_input("", self.lol)
+                                //.on_input(Message::Password)
+                                //.on_submit(Message::Submit)
+                                //.secure(true)
+                                .padding(5),
+                        ]
+                        .spacing(5),
+                        column![
+                            text("Plan").size(12),
+                            //pick_list(Some(self.plan), Plan::ALL, Plan::to_string)
+                            //    .on_select(Message::Plan)
+                            //    .padding(5),
+                        ]
+                        .spacing(5),
+                        button(text("Submit")).on_press(Message::Increment),
+                    ]
+                    .spacing(10)
+                ]
+                .spacing(20),
+            )
+            .width(300)
+            .padding(10)
+            .style(container::rounded_box);
 
 
+
+            modal(interface, signup, Message::HideModal)
+        } else {
+            interface.into()
+        }
 
         //let interface = column![increment, counter];
         //interface
-    }     
+    }   
+
+    fn hide_modal(&mut self) {
+        self.show_modal = false;
+    }
 }
 
 
@@ -119,3 +189,33 @@ fn main() -> iced::Result {
     //}
     //get_from_json().expect("nn foi");
 }
+
+fn modal<'a, Message>(
+    base: impl Into<Element<'a, Message>>,
+    content: impl Into<Element<'a, Message>>,
+    on_blur: Message,
+) -> Element<'a, Message>
+where
+    Message: Clone + 'a,
+{
+    stack![
+        base.into(),
+        opaque(
+            mouse_area(center(opaque(content)).style(|_theme| {
+                container::Style {
+                    background: Some(
+                        Color {
+                            a: 0.8,
+                            ..Color::BLACK
+                        }
+                        .into(),
+                    ),
+                    ..container::Style::default()
+                }
+            }))
+            .on_press(on_blur)
+        )
+    ]
+    .into()
+}
+
