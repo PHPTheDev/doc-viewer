@@ -44,3 +44,7 @@ pub enum Setor {
 	CAF,
 	FISC,
 }
+
+impl Setor {
+
+}
