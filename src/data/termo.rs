@@ -2,16 +2,18 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 pub struct Termo {
-	nome: String,
-	data: String,
-	qtd: u8,
-	setor: Setor,
+	pub nome: String,
+  pub rf: String,
+	pub data: String,
+	pub qtd: u8,
+	pub setor: Setor,
 }
 
 impl Termo {
 	pub fn new() -> Self{
 		Termo {
 			nome: String::new(),
+      rf: String::new(),
 			data: String::new(),
 			qtd: Default::default(),
 			setor: Setor::TI,

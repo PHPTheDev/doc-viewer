@@ -6,7 +6,7 @@ use crate::users::models::{Termo, termo_pdf};
 pub async fn json(Json(payload): Json<Termo>) -> Vec<u8> {
     let connection = sqlite::open("teste.db").unwrap();
     let pdf = termo_pdf(&payload).await;
-    let query = format!("INSERT INTO teste (nome,rf,setor,pdf) VALUES ('{}','{}','{}','{}','{:?}','{:?}')",payload.nome,payload.rf,payload.data, payload.qtd, payload.setor, pdf);    connection.execute(
+    let query = format!("INSERT INTO teste (nome,rf,data,qtd,setor,pdf) VALUES ('{}','{}','{}','{}','{:?}','{:?}')",payload.nome,payload.rf,payload.data, payload.qtd, payload.setor, pdf);    connection.execute(
 "CREATE TABLE IF NOT EXISTS teste (
             id INTEGER PRIMARY KEY,
             nome TEXT,

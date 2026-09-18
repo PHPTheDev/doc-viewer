@@ -1,11 +1,11 @@
-use iced;
 use iced::Task;
 use iced::{Element, Length, Border, Shadow, Color};
 use iced::widget::{Row, Column, button, row, center, container, mouse_area, opaque, column, operation, space, stack,
     text, text_input, scrollable};
-use tree_ds::prelude::*;
+use tree_ds::prelude::TraversalStrategy;
 pub mod data;
 pub mod saver;
+use crate::data::termo::Termo;
 use crate::saver::{save_as_json, get_from_json};
 use crate::data::tree::build_tree;
 
@@ -48,6 +48,8 @@ fn dir_button_style() -> impl Fn(&iced::Theme, button::Status) -> button::Style 
     }
 }
 
+
+
 impl<'a> App<'a>{
 
 
@@ -74,9 +76,40 @@ impl<'a> App<'a>{
             })
     }
 
-    // async fn get_termos_db() -> Column<'static, Message> {
-        
-    // }
+    async fn get_termos_db() -> Result<Vec<Termo>, reqwest::Error> {
+         let termos = reqwest::get("http://httpbin.org/ip")
+            .await?
+            .json::<Vec<Termo>>()
+            .await?;
+
+        Ok(termos)
+         
+    }
+
+    async fn get_termos() -> Column<'static, Message>{
+        Self::get_termos_db().await
+            .iter()
+            .fold(column![], |col, item| {
+                for termo in item {
+
+                col.push(container(
+                        column![
+                            text(termo.nome.clone()),
+                            text(termo.data.clone()),
+                            button(text(termo.rf.clone())).on_press(Message::ItemPressed(1)),
+                            text(termo.qtd.clone()),
+                            text(termo.setor.clone()),
+                        ]
+
+                    ));
+                };
+                col
+                
+
+            })
+    }
+
+
 
     fn update(&mut self, message: Message) -> Task<Message>{
         match message{
@@ -120,7 +153,9 @@ impl<'a> App<'a>{
             center(button(text("Show Modal")).on_press(Message::ShowModal)),
             increment,
             counter,
-            children]
+            children,
+            Self::get_termos()
+       ]
 
             ].width(Length::Fill);
 
