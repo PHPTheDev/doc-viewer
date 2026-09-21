@@ -9,6 +9,13 @@ use std::string::String;
 // use sqlite::Type::String;
 
 #[derive(Serialize, Deserialize)]
+pub struct User {
+    pub rf: i64,
+    pub senha: String,
+}
+
+
+#[derive(Serialize, Deserialize)]
 pub struct Termo {
 	pub nome: String,
     pub rf: String,
