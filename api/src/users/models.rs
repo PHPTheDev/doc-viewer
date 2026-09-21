@@ -11,7 +11,7 @@ use std::string::String;
 #[derive(Serialize, Deserialize)]
 pub struct Termo {
 	pub nome: String,
-  pub rf: String,
+    pub rf: String,
 	pub data: String,
 	pub qtd: i64,
 	pub setor: Setor,

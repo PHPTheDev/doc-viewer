@@ -13,11 +13,11 @@ use crate::data::tree::build_tree;
 const ROOT_PATH: &str = r"C:\Users\x558899\Documents\Termos de Folhas scaneadas";
 
 #[derive(Default)]
-struct App<'a>{
+struct App{
     value: i32,
     items: Vec<String>,
     show_modal: bool,   
-    lol: &'a str,
+    data: Termo,
 
 }
 
@@ -28,6 +28,8 @@ enum Message{
     ItemPressed(usize),    
     ShowModal,
     HideModal,
+    FetchData,
+    DataFetched(Termo),
 }
 
 fn dir_button_style() -> impl Fn(&iced::Theme, button::Status) -> button::Style {
@@ -50,7 +52,7 @@ fn dir_button_style() -> impl Fn(&iced::Theme, button::Status) -> button::Style 
 
 
 
-impl<'a> App<'a>{
+impl App{
 
 
 
@@ -76,37 +78,31 @@ impl<'a> App<'a>{
             })
     }
 
-    async fn get_termos_db() -> Result<Vec<Termo>, reqwest::Error> {
-         let termos = reqwest::get("http://httpbin.org/ip")
-            .await?
-            .json::<Vec<Termo>>()
-            .await?;
+    async fn get_termos_db(owned_arg: String) -> Termo {
+        reqwest::get(owned_arg)
+            .await.unwrap()
+            .json::<Termo>()
+            .await.expect("REASON")
 
-        Ok(termos)
-         
     }
 
-    async fn get_termos() -> Column<'static, Message>{
-        Self::get_termos_db().await
-            .iter()
-            .fold(column![], |col, item| {
-                for termo in item {
+    // fn get_termos(&self) -> Column<'static, Message>{
 
-                col.push(container(
-                        column![
-                            text(termo.nome.clone()),
-                            text(termo.data.clone()),
-                            button(text(termo.rf.clone())).on_press(Message::ItemPressed(1)),
-                            text(termo.qtd.clone()),
-                            text(termo.setor.clone()),
-                        ]
+    //     let vec_termos = &self.data;
 
-                    ));
-                };
-                col
-                
+    //         vec_termos.iter().fold(column![], |col, item| {
 
-            })
+    //                 col.push(button(text(item.nome.clone())).style(dir_button_style()).on_press(Message::ItemPressed(1)))
+                    
+                    
+
+    //         })
+
+    // }
+
+    fn get_termo(&self) -> Column<'static, Message> {
+        let termo = &self.data;
+        column![button(text(termo.nome.clone())).style(dir_button_style()).on_press(Message::ItemPressed(1))]
     }
 
 
@@ -131,6 +127,14 @@ impl<'a> App<'a>{
                 self.hide_modal();
                 //Task::none();
             }
+            Message::FetchData => {
+                let path = String::from("http://127.0.0.1:3000/users/1");
+                Task::perform(Self::get_termos_db(path), Message::DataFetched);
+            }
+            Message::DataFetched(result) => {
+                self.data = result;
+                //Task::none()
+            }
         }
         Task::none()
     }
@@ -148,14 +152,15 @@ impl<'a> App<'a>{
                 col.push(button(text(item.clone())).on_press(Message::ItemPressed(i)))
             });
 
-       let interface = row![scrollable(Self::new_tree()), column![
+       let interface = row![scrollable(Self::new_tree()), scrollable(column![
             button("Add Widget").on_press(Message::AddRItem),
+            button("Fetch Data").on_press(Message::FetchData),
             center(button(text("Show Modal")).on_press(Message::ShowModal)),
             increment,
             counter,
             children,
-            Self::get_termos()
-       ]
+            self.get_termo()
+       ])
 
             ].width(Length::Fill);
 
@@ -166,19 +171,18 @@ impl<'a> App<'a>{
                     column![
                         column![
                             text("Email").size(12),
-                            text_input("", self.lol)
+
                                 //.on_input(Message::Email)
                                 //.on_submit(Message::Submit)
-                                .padding(5),
                         ]
                         .spacing(5),
                         column![
                             text("Password").size(12),
-                            text_input("", self.lol)
+
                                 //.on_input(Message::Password)
                                 //.on_submit(Message::Submit)
                                 //.secure(true)
-                                .padding(5),
+
                         ]
                         .spacing(5),
                         column![

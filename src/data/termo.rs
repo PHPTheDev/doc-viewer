@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug, Default)]
 pub struct Termo {
 	pub nome: String,
   pub rf: String,
@@ -20,6 +20,12 @@ impl Termo {
 		}
 	}
 }
+
+// impl Default for Termo {
+// 	fn default() -> Termo {
+// 		Termo::new()
+// 	}
+// }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone, Debug)]
 pub struct NodeTermo{
@@ -48,5 +54,13 @@ pub enum Setor {
 }
 
 impl Setor {
+	pub fn new() -> Setor {
+        Setor::TI
+    }
+}
 
+impl Default for Setor {
+    fn default() -> Self {
+        Self::new()
+    }
 }
