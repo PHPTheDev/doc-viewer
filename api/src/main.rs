@@ -5,6 +5,7 @@ use tower_http::cors::{Any, CorsLayer};
 use tower::ServiceBuilder;
 
 pub mod users;
+pub mod termos;
 
 //const app: Router = Router::new();
 
@@ -17,12 +18,12 @@ async fn main() {
 
 
     let app = Router::new()
-                      .route("/", post(users::serializer::json))
-                      .route("/users/{id}", get(users::routes::get_termo))
-                      .route("/users", get(users::routes::get_termos))
+                      .route("/", post(termos::serializer::json))
+                      .route("/termos/{id}", get(termos::routes::get_termo))
+                      .route("/termos", get(termos::routes::get_termos))
                       .route("/newUser",post(users::routes::new_user))
                       .route("/checkUser",post(users::routes::check_user))
-                      .route("/filtrar/{setor}",post(users::routes::filtrar_setor))
+                      .route("/filtrar/{setor}",post(termos::routes::filtrar_setor))
                       .layer(ServiceBuilder::new().layer(cors));
 
 
