@@ -6,13 +6,14 @@ use crate::termos::models::{Termo, termo_pdf};
 pub async fn json(Json(payload): Json<Termo>) -> Vec<u8> {
     let connection = sqlite::open("teste.db").unwrap();
     let pdf = termo_pdf(&payload).await;
-    let query = format!("INSERT INTO teste (nome,rf,data,qtd,setor,pdf,user) 
-        VALUES ('{}','{}','{}','{}','{:?}','{:?}', '{}')",
+    let query = format!("INSERT INTO teste (nome,rf,data,qtd,setor,status,pdf,user) 
+        VALUES ('{}','{}','{}','{}','{:?}','{:?}','{:?}', '{}')",
         payload.nome,
         payload.rf,
         payload.data, 
         payload.qtd, 
-        payload.setor, 
+        payload.setor,
+        payload.status, 
         pdf,
         payload.user
     );    
@@ -24,6 +25,7 @@ pub async fn json(Json(payload): Json<Termo>) -> Vec<u8> {
             data INTEGER, 
             qtd INTEGER,
             setor TEXT,
+            status TEXT,
             pdf BLOB,
             user INTEGER,
             FOREIGN KEY(user) REFERENCES users(rf)

@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::string::String;
 
 use crate::users::models::User;
+//use crate::termos::parser::Parse;
 
 #[derive(Serialize, Deserialize)]
 pub struct Termo {
@@ -15,6 +16,7 @@ pub struct Termo {
 	pub data: String,
 	pub qtd: i64,
 	pub setor: Setor,
+    pub status: Status,
     pub user: i64,
 }
 
@@ -26,7 +28,7 @@ impl Default for Termo {
 
 impl Termo {
     fn new() -> Termo {
-        Termo { nome: String::new(), rf: String::new(),data: String::new(), qtd: Default::default(), setor: Setor::TI, user: Default::default(), }
+        Termo { nome: String::new(), rf: String::new(),data: String::new(), qtd: Default::default(), setor: Setor::TI, status: Status::PENDENTE ,user: Default::default(), }
     }
 }
 
@@ -66,8 +68,8 @@ impl Setor {
 
     pub fn parse(value: String) -> Self {
         match value {
-            val if val == "Fisc".to_string() => Setor::FISC,
-            val if val == "Sugesp".to_string() => Setor::SUG,
+            value if value == "Fisc".to_string() => Setor::FISC,
+            value if value == "Sugesp".to_string() => Setor::SUG,
             _ => Setor::default(),
         }
     }
@@ -78,6 +80,34 @@ impl Setor {
 }
 
 impl Default for Setor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum Status {
+    PENDENTE,
+    ATENDIDO,
+    RECUSADO,
+} 
+
+impl Status {
+    pub fn parse(value: String) -> Self {
+        match value {
+            value if value == "Pendente".to_string() => Status::PENDENTE,
+            value if value == "Atendido".to_string() => Status::ATENDIDO,
+            value if value == "Recusado".to_string() => Status::RECUSADO,
+            _ => Status::default(),
+        }
+    }
+
+    pub fn new() -> Status {
+        Status::PENDENTE
+    }
+}
+
+impl Default for Status {
     fn default() -> Self {
         Self::new()
     }

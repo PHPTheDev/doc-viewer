@@ -1,7 +1,8 @@
 use sqlite::State;
 use axum::Json;
+use axum::response::Response;
 use axum::extract::Path;
-use crate::termos::models::{ Setor, Termo, termo_pdf};
+use crate::termos::models::{ Setor, Status, Termo, termo_pdf};
 
 //#[axum::debug_handler]
 pub async fn get_termos() -> Json<Vec<Termo>> {
@@ -15,6 +16,7 @@ pub async fn get_termos() -> Json<Vec<Termo>> {
         let setor = Setor::parse(statement.read::<String, _>("setor").unwrap());      
         let data = statement.read::<String, _>("rf").unwrap();
         let qtd = statement.read::<i64, _>("rf").unwrap();
+        let status = Status::parse(statement.read::<String, _>("status").unwrap());
         let user = statement.read::<i64, _>("user").unwrap();
 
         let termo = Termo {
@@ -23,6 +25,7 @@ pub async fn get_termos() -> Json<Vec<Termo>> {
             	data: data,
 		        setor: setor,
             	qtd: qtd,
+                status: status,
                 user: user,
 		};
 
@@ -48,8 +51,9 @@ pub async fn get_termo(Path(user_id): Path<i64>) -> Json<Termo> {
             nome: statement.read::<String, _>("nome").unwrap(),
             rf: statement.read::<String, _>("rf").unwrap(),
             setor: Setor::parse(statement.read::<String, _>("setor").unwrap()),
-            data: statement.read::<String, _>("rf").unwrap(),
-            qtd: statement.read::<i64, _>("rf").unwrap(),
+            data: statement.read::<String, _>("data").unwrap(),
+            qtd: statement.read::<i64, _>("qtd").unwrap(),
+            status: Status::parse(statement.read::<String, _>("status").unwrap()),
             user: statement.read::<i64, _>("user").unwrap(),
 
         };
@@ -57,6 +61,22 @@ pub async fn get_termo(Path(user_id): Path<i64>) -> Json<Termo> {
     };
         Json(rec)   
 
+}
+
+// pub async fn put_termo(Path(user_id): Path<i64>) -> Json<termo>{
+
+// }
+
+pub async fn delete_termo(Path(user_id): Path<i64>) {
+    let connection = sqlite::open("teste.db").unwrap();
+    let query = format!("DELETE FROM teste WHERE id = {}", user_id);
+    connection.execute(query).unwrap();
+
+    Response::builder()
+    .status(200)
+    .header("X-Custom-Foo", "Bar")
+    .body(())
+    .unwrap();
 }
 
 pub async fn filtrar_setor(Path(setor): Path<String>) -> Json<Vec<Termo>> {
@@ -71,6 +91,7 @@ pub async fn filtrar_setor(Path(setor): Path<String>) -> Json<Vec<Termo>> {
         let setor = Setor::parse(statement.read::<String, _>("setor").unwrap());      
         let data = statement.read::<String, _>("rf").unwrap();
         let qtd = statement.read::<i64, _>("rf").unwrap();
+        let status = Status::parse(statement.read::<String, _>("status").unwrap());
         let user = statement.read::<i64, _>("user").unwrap();
 
         let termo = Termo {
@@ -79,6 +100,7 @@ pub async fn filtrar_setor(Path(setor): Path<String>) -> Json<Vec<Termo>> {
                 data: data,
                 setor: setor,
                 qtd: qtd,
+                status: status,
                 user: user,
         };
 
