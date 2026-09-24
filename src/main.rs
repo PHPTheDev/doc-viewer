@@ -2,9 +2,7 @@ use iced::Task;
 use iced::widget::{text, column, button};
 use iced::Element;
 use reqwest::{Client, Body};
-
-pub mod data;
-use crate::data::termo::Termo;
+use api_models::termos::models::{ Status, Termo};
 
 
 
@@ -59,7 +57,7 @@ async fn atender_termo(id: i64) {
     let url = format!("http://127.0.0.1:3000/termos/{}/status", id);
     let cli = Client::new();
     let mut new = Termo::new();
-    new.status = data::termo::Status::ATENDIDO;
+    new.status = Status::ATENDIDO;
     new.user = 1234;
     let _ = cli.put(url).json(&new).send().await.unwrap();
     println!("this works?");

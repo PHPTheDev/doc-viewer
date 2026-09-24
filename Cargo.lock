@@ -84,6 +84,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "api_models"
+version = "0.1.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "arrayref"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3099,6 +3106,7 @@ checksum = "6c20b6793b5c2fa6553b250154b78d6d0db37e72700ae35fad9387a46f487c97"
 name = "rust-learn"
 version = "0.1.0"
 dependencies = [
+ "api_models",
  "dashmap",
  "http-body",
  "iced",

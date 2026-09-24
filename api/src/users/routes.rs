@@ -1,7 +1,9 @@
 use sqlite::State;
 use axum::Json;
 use axum::extract::Path;
-use crate::users::models::User;
+//use crate::users::models::User;
+use api_models::users::models::User;
+use axum::response::Response;
 
 pub async fn new_user(Json(payload):Json<User>) {
     let connection = sqlite::open("teste.db").unwrap();

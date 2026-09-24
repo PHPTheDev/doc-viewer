@@ -22,7 +22,6 @@ async fn main() {
                       .route("/termos/{id}", get(termos::routes::get_termo).delete(termos::routes::delete_termo))
                       .route("/termos", get(termos::routes::get_termos))
                       .route("/termos/{id}/status", put(termos::routes::put_termo))
-
                       .route("/newUser",post(users::routes::new_user))
                       .route("/checkUser",post(users::routes::check_user))
                       .route("/filtrar/{setor}",post(termos::routes::filtrar_setor))

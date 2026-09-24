@@ -13,3 +13,4 @@ iced = {version = "0.14.0", features = ["debug"]}
 tokio = "1.53.1"
 reqwest = {version = "0.13.5", features = ["json"] }
 http-body = "1.1.0"
+api_models = { path = 'C:\Users\x558899\Documents\code\rust\rust-learn\api_models' , version = "0.1.0"}

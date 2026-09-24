@@ -1,0 +1,14 @@
+C:\Users\x558899\Documents\code\rust\rust-learn\api-models\target\debug\deps\serde-082248eac43586a2.d: C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\lib.rs C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\integer128.rs C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\mod.rs C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\de.rs C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\ser.rs C:\Users\x558899\Documents\code\rust\rust-learn\api-models\target\debug\build\serde-12f5dc20d286d7b8\out/private.rs
+
+C:\Users\x558899\Documents\code\rust\rust-learn\api-models\target\debug\deps\libserde-082248eac43586a2.rlib: C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\lib.rs C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\integer128.rs C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\mod.rs C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\de.rs C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\ser.rs C:\Users\x558899\Documents\code\rust\rust-learn\api-models\target\debug\build\serde-12f5dc20d286d7b8\out/private.rs
+
+C:\Users\x558899\Documents\code\rust\rust-learn\api-models\target\debug\deps\libserde-082248eac43586a2.rmeta: C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\lib.rs C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\integer128.rs C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\mod.rs C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\de.rs C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\ser.rs C:\Users\x558899\Documents\code\rust\rust-learn\api-models\target\debug\build\serde-12f5dc20d286d7b8\out/private.rs
+
+C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\lib.rs:
+C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\integer128.rs:
+C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\mod.rs:
+C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\de.rs:
+C:\Users\x558899\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\ser.rs:
+C:\Users\x558899\Documents\code\rust\rust-learn\api-models\target\debug\build\serde-12f5dc20d286d7b8\out/private.rs:
+
+# env-dep:OUT_DIR=C:\\Users\\x558899\\Documents\\code\\rust\\rust-learn\\api-models\\target\\debug\\build\\serde-12f5dc20d286d7b8\\out

@@ -2,7 +2,23 @@ use sqlite::{Connection, State};
 use axum::Json;
 use axum::response::Response;
 use axum::extract::Path;
-use crate::termos::models::{ Setor, Status, Termo, termo_pdf};
+use pdfrs::pdf_generator::PageLayout;
+use pdfrs::builder::PdfBuilder;
+//use crate::termos::models::{ Setor, Status, Termo, termo_pdf};
+use api_models::termos::models::{Setor, Status, Termo};
+
+pub async fn termo_pdf(i: &Termo) -> Vec<u8>  {
+    PdfBuilder::new()
+    .with_layout(PageLayout::landscape())
+    .with_margins(72.0)
+    .add_heading("termo",1)
+    .add_paragraph(format!("nome={}, rf={}, setor={:?}",i.nome,i.rf,i.setor).as_str())
+    .build_bytes()
+    .unwrap()
+
+
+}
+
 
 //#[axum::debug_handler]
 pub async fn get_termos() -> Json<Vec<Termo>> {

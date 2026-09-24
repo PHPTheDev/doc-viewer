@@ -1,7 +1,9 @@
 use pdfrs::builder::PdfBuilder;
 use pdfrs::pdf_generator::PageLayout;
 use axum::Json;
-use crate::termos::models::{Termo, termo_pdf};
+//use crate::termos::models::{Termo, termo_pdf};
+use api_models::termos::models::Termo;
+use crate::termos::routes::termo_pdf;
 
 pub async fn json(Json(payload): Json<Termo>) -> Vec<u8> {
     let connection = sqlite::open("teste.db").unwrap();
