@@ -1,12 +1,17 @@
 use iced::Task;
 use iced::widget::{text, column, button};
 use iced::Element;
+use reqwest::{Client, Body};
+
+pub mod data;
+use crate::data::termo::Termo;
 
 
 
 #[derive(Debug, Clone)]
 enum Message {
     GetFetch,
+    ChangeStatusTermo,
     //GetFetched(String),
 }
 
@@ -22,6 +27,10 @@ fn update(state: &mut State, message: Message) { //-> Task<Message>
             state.text = get_termos();
 
 
+        }
+        Message::ChangeStatusTermo => {
+            atender_termo(1);
+            state.text = get_termos();
         }//Task::perform(
                 //get_termos(),
                 //Message::GetFetched
@@ -45,11 +54,23 @@ async fn get_termos() -> String {
     body
 }
 
+#[tokio::main(worker_threads = 10)]
+async fn atender_termo(id: i64) {
+    let url = format!("http://127.0.0.1:3000/termos/{}/status", id);
+    let cli = Client::new();
+    let mut new = Termo::new();
+    new.status = data::termo::Status::ATENDIDO;
+    new.user = 1234;
+    let _ = cli.put(url).json(&new).send().await.unwrap();
+    println!("this works?");
+}
+
 
 fn view(state: &State) -> Element<'_, Message> {
     column![
         button(text("pesquisar")).on_press(Message::GetFetch),
         text(state.text.clone()),
+        button(text("Atender")).on_press(Message::ChangeStatusTermo)
 
     ]
     .into()

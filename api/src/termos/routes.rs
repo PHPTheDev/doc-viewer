@@ -1,4 +1,4 @@
-use sqlite::State;
+use sqlite::{Connection, State};
 use axum::Json;
 use axum::response::Response;
 use axum::extract::Path;
@@ -22,11 +22,11 @@ pub async fn get_termos() -> Json<Vec<Termo>> {
         let termo = Termo {
 		        nome: nome,
 		        rf: rf,
-            	data: data,
+            data: data,
 		        setor: setor,
-            	qtd: qtd,
-                status: status,
-                user: user,
+            qtd: qtd,
+            status: status,
+            user: user,
 		};
 
         new.push(termo)
@@ -63,9 +63,23 @@ pub async fn get_termo(Path(user_id): Path<i64>) -> Json<Termo> {
 
 }
 
-// pub async fn put_termo(Path(user_id): Path<i64>) -> Json<termo>{
+pub async fn put_termo(Path(user_id): Path<i64>, Json(payload): Json<Termo>) {
+    let status = payload.status.as_str();
+    let connection = sqlite::open("teste.db").unwrap();
+    let query = format!("UPDATE teste SET status = '{}' FROM teste as t WHERE t.id = {}", status, user_id);
+    // let mut statement = connection.prepare(query).unwrap();
+    //statement.bind((1, status)).unwrap();
 
-// }
+
+    connection.execute(query).unwrap();
+
+        Response::builder()
+        .status(200)
+        .header("X-Custom-Foo", "Bar")
+        .body(())
+        .unwrap();
+
+}
 
 pub async fn delete_termo(Path(user_id): Path<i64>) {
     let connection = sqlite::open("teste.db").unwrap();

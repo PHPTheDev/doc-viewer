@@ -93,6 +93,15 @@ pub enum Status {
 } 
 
 impl Status {
+
+    pub fn as_str(&self) -> &str{
+        match self {
+            Status::PENDENTE => "Pendente", 
+            Status::ATENDIDO => "Atendido",
+            Status::RECUSADO => "Recusado",
+        }
+    }
+
     pub fn parse(value: String) -> Self {
         match value {
             value if value == "Pendente".to_string() => Status::PENDENTE,

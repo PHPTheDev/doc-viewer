@@ -3100,6 +3100,7 @@ name = "rust-learn"
 version = "0.1.0"
 dependencies = [
  "dashmap",
+ "http-body",
  "iced",
  "rayon",
  "reqwest",
