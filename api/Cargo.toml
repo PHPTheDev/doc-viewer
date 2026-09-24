@@ -13,4 +13,4 @@ sqlite = "0.37.0"
 tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread"] }
 tower = "0.5.3"
 tower-http ={version = "0.7.1", features = ["trace", "cors"]}
-api_models = { path = 'C:\Users\x558899\Documents\code\rust\rust-learn\api_models' , version = "0.1.0"}
+api_models = { path = '../api_models' , version = "0.1.0"}

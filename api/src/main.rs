@@ -24,6 +24,7 @@ async fn main() {
                       .route("/termos/{id}/status", put(termos::routes::put_termo))
                       .route("/newUser",post(users::routes::new_user))
                       .route("/checkUser",post(users::routes::check_user))
+                      .route("/users/{id}", put(users::routes::put_user).delete(users::routes::delete_user))
                       .route("/filtrar/{setor}",post(termos::routes::filtrar_setor))
                       .layer(ServiceBuilder::new().layer(cors));
 

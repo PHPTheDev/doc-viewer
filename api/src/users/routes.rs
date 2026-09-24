@@ -18,6 +18,35 @@ pub async fn new_user(Json(payload):Json<User>) {
 
 }
 
+pub async fn delete_user(Path(user_id):Path<i64>) {
+    let con = sqlite::open("teste.db").unwrap();
+    let query = format!("DELETE FROM users WHERE rf = {}", user_id);
+    con.execute(query).unwrap();
+
+    Response::builder()
+    .status(200)
+    .header("X-Custom-Foo", "Bar")
+    .body(())
+    .unwrap();
+}
+
+pub async fn put_user(Path(user_id):Path<i64>, Json(payload):Json<User>){
+    let con = sqlite::open("teste.db").unwrap();
+    let query = format!("UPDATE users SET (rf,senha,is_admin) = {}, {}, {} FROM users as u WHERE u.id = {}", 
+        payload.rf,
+        payload.senha,
+        payload.is_admin,
+        user_id
+    );
+    con.execute(query).unwrap();
+
+    Response::builder()
+    .status(200)
+    .header("X-Custom-Foo", "Bar")
+    .body(())
+    .unwrap();
+
+}
 
 pub async fn check_user(Json(payload):Json<User>) {
     let connection = sqlite::open("teste.db").unwrap();
