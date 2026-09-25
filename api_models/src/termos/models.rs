@@ -4,8 +4,9 @@ use std::string::String;
 
 use crate::users::models::User;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Termo {
+    pub id: i64,
 	pub nome: String,
     pub rf: String,
 	pub data: String,
@@ -23,11 +24,11 @@ impl Default for Termo {
 
 impl Termo {
     pub fn new() -> Termo {
-        Termo { nome: String::new(), rf: String::new(),data: String::new(), qtd: Default::default(), setor: Setor::TI, status: Status::PENDENTE ,user: Default::default(), }
+        Termo { id: Default::default(), nome: String::new(), rf: String::new(),data: String::new(), qtd: Default::default(), setor: Setor::TI, status: Status::PENDENTE ,user: Default::default(), }
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Setor {
 	TI,
 	SUG,
@@ -80,7 +81,7 @@ impl Default for Setor {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Status {
     PENDENTE,
     ATENDIDO,

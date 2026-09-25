@@ -27,19 +27,21 @@ pub async fn get_termos() -> Json<Vec<Termo>> {
     let mut statement = connection.prepare(query).unwrap();
     let mut new = vec![];
     while let Ok(State::Row) = statement.next() {
+        let id = statement.read::<i64, _>("id").unwrap();
         let nome = statement.read::<String, _>("nome").unwrap();
         let rf = statement.read::<String, _>("rf").unwrap();
         let setor = Setor::parse(statement.read::<String, _>("setor").unwrap());      
-        let data = statement.read::<String, _>("rf").unwrap();
-        let qtd = statement.read::<i64, _>("rf").unwrap();
+        let data = statement.read::<String, _>("data").unwrap();
+        let qtd = statement.read::<i64, _>("qtd").unwrap();
         let status = Status::parse(statement.read::<String, _>("status").unwrap());
         let user = statement.read::<i64, _>("user").unwrap();
 
         let termo = Termo {
-		        nome: nome,
-		        rf: rf,
+            id:id,
+            nome: nome,
+		    rf: rf,
             data: data,
-		        setor: setor,
+		    setor: setor,
             qtd: qtd,
             status: status,
             user: user,
@@ -64,6 +66,7 @@ pub async fn get_termo(Path(user_id): Path<i64>) -> Json<Termo> {
         println!("nome = {}", statement.read::<String, _>("rf").unwrap());
         println!("nome = {}", statement.read::<String, _>("setor").unwrap());
         rec = Termo {
+            id: statement.read::<i64, _>("id").unwrap(),
             nome: statement.read::<String, _>("nome").unwrap(),
             rf: statement.read::<String, _>("rf").unwrap(),
             setor: Setor::parse(statement.read::<String, _>("setor").unwrap()),
@@ -116,6 +119,7 @@ pub async fn filtrar_setor(Path(setor): Path<String>) -> Json<Vec<Termo>> {
     statement.bind((1,setor.as_str())).unwrap();
     let mut new = vec![];
     while let Ok(State::Row) = statement.next() {
+        let id = statement.read::<i64, _>("id").unwrap();
         let nome = statement.read::<String, _>("nome").unwrap();
         let rf = statement.read::<String, _>("rf").unwrap();
         let setor = Setor::parse(statement.read::<String, _>("setor").unwrap());      
@@ -125,6 +129,7 @@ pub async fn filtrar_setor(Path(setor): Path<String>) -> Json<Vec<Termo>> {
         let user = statement.read::<i64, _>("user").unwrap();
 
         let termo = Termo {
+                id: id,
                 nome: nome,
                 rf: rf,
                 data: data,

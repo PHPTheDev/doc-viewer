@@ -1,5 +1,5 @@
 use iced::Task;
-use iced::widget::{text, column, button};
+use iced::widget::{Column, text, column, button};
 use iced::Element;
 use reqwest::{Client, Body};
 use api_models::termos::models::{ Status, Termo};
@@ -9,26 +9,26 @@ use api_models::termos::models::{ Status, Termo};
 #[derive(Debug, Clone)]
 enum Message {
     GetFetch,
-    ChangeStatusTermo,
+    ChangeStatusTermo(i64),
     //GetFetched(String),
 }
 
 #[derive(Default)]
 struct State {
-    text: String,
+    data: Vec<Termo>,
 }
 
 
 fn update(state: &mut State, message: Message) { //-> Task<Message> 
     match message {
         Message::GetFetch => {
-            state.text = get_termos();
+            state.data = get_termos();
 
 
         }
-        Message::ChangeStatusTermo => {
-            atender_termo(1);
-            state.text = get_termos();
+        Message::ChangeStatusTermo(val) => {
+            atender_termo(val);
+            state.data = get_termos();
         }//Task::perform(
                 //get_termos(),
                 //Message::GetFetched
@@ -47,8 +47,9 @@ fn update(state: &mut State, message: Message) { //-> Task<Message>
 }
 
 #[tokio::main(worker_threads = 10)]
-async fn get_termos() -> String {
-    let body = reqwest::get("http://127.0.0.1:3000/termos").await.unwrap().text().await.unwrap(); 
+async fn get_termos() -> Vec<Termo> {
+    let body = reqwest::get("http://127.0.0.1:3000/termos").await.unwrap().json::<Vec<Termo>>().await.unwrap();
+    print!("{:?}", body.clone()); 
     body
 }
 
@@ -65,14 +66,28 @@ async fn atender_termo(id: i64) {
 
 
 fn view(state: &State) -> Element<'_, Message> {
-    column![
-        button(text("pesquisar")).on_press(Message::GetFetch),
-        text(state.text.clone()),
-        button(text("Atender")).on_press(Message::ChangeStatusTermo)
+    let button = button(text("pesquisar")).on_press(Message::GetFetch);
+    let dt = iter_data(state);
 
-    ]
-    .into()
+        let interface = column![button, dt].into();
+        interface
 
+}
+
+fn iter_data(state: &State) -> Element<'_, Message> {
+    state.data
+        .iter()
+        .fold(column![], |col, item| {
+                let counter = 1;
+                col.push(column![
+                    text(format!("nome: {}" ,item.nome.clone())),
+                    text(item.rf.clone()),
+                    text(item.status.as_str().clone()),
+                    text(item.qtd.clone()),
+                    button(text("Atender")).on_press(Message::ChangeStatusTermo(item.id))
+            ])
+
+        }).into()
 }
 
 

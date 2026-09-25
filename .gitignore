@@ -1,5 +1,5 @@
 /target
 /api/target
-/api_models/target
 /api/*db
+/api_models/target
 *.json

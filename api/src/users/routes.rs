@@ -32,7 +32,7 @@ pub async fn delete_user(Path(user_id):Path<i64>) {
 
 pub async fn put_user(Path(user_id):Path<i64>, Json(payload):Json<User>){
     let con = sqlite::open("teste.db").unwrap();
-    let query = format!("UPDATE users SET (rf,senha,is_admin) = {}, {}, {} FROM users as u WHERE u.id = {}", 
+    let query = format!("UPDATE users SET rf = {}, senha = '{}', is_admin = {} FROM users as u WHERE u.rf = {}", 
         payload.rf,
         payload.senha,
         payload.is_admin,
