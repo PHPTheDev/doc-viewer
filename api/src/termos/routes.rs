@@ -82,10 +82,10 @@ pub async fn get_termo(Path(user_id): Path<i64>) -> Json<Termo> {
 
 }
 
-pub async fn put_termo(Path(user_id): Path<i64>, Json(payload): Json<Termo>) {
-    let status = payload.status.as_str();
+pub async fn atende_termo(Path(user_id): Path<i64>, Json(status): Json<Status>) {
+
     let connection = sqlite::open("teste.db").unwrap();
-    let query = format!("UPDATE teste SET status = '{}' FROM teste as t WHERE t.id = {}", status, user_id);
+    let query = format!("UPDATE teste SET status = '{}' FROM teste as t WHERE t.id = {}", status.as_str(), user_id);
     // let mut statement = connection.prepare(query).unwrap();
     //statement.bind((1, status)).unwrap();
 

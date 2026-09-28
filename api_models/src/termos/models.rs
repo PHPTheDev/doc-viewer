@@ -1,6 +1,8 @@
 //#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::string::String;
+use std::fmt::Display;
+use std::fmt;
 
 use crate::users::models::User;
 
@@ -75,13 +77,23 @@ impl Setor {
     }
 }
 
+impl Display for Setor {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {  
+        match self {
+            Setor::FISC => write!(f, "Fisc"),
+            Setor::SUG => write!(f, "Sugesp"), 
+            _ => write!(f, "TI"),  
+        }
+    }
+}
+
 impl Default for Setor {
     fn default() -> Self {
         Self::new()
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum Status {
     PENDENTE,
     ATENDIDO,

@@ -1,8 +1,11 @@
 use iced::Task;
-use iced::widget::{Column, text, column, button};
+use iced::widget::{Column, text, column, button, scrollable, pick_list};
 use iced::Element;
 use reqwest::{Client, Body};
-use api_models::termos::models::{ Status, Termo};
+use api_models::termos::models::{Setor, Status, Termo};
+
+mod client;
+use crate::client::termos_ep::{get_termos, atender_termo, filtro_termos};
 
 
 
@@ -10,12 +13,15 @@ use api_models::termos::models::{ Status, Termo};
 enum Message {
     GetFetch,
     ChangeStatusTermo(i64),
+    GetNew(Setor),
     //GetFetched(String),
 }
 
-#[derive(Default)]
+#[derive(Default, PartialEq, Clone)]
 struct State {
     data: Vec<Termo>,
+    filtro: Option<Setor>,
+
 }
 
 
@@ -29,7 +35,12 @@ fn update(state: &mut State, message: Message) { //-> Task<Message>
         Message::ChangeStatusTermo(val) => {
             atender_termo(val);
             state.data = get_termos();
-        }//Task::perform(
+        }
+        Message::GetNew(setor) => {
+            state.filtro = Some(setor.clone());
+            state.data = filtro_termos(setor);
+        }
+        //Task::perform(
                 //get_termos(),
                 //Message::GetFetched
             //),
@@ -44,32 +55,20 @@ fn update(state: &mut State, message: Message) { //-> Task<Message>
 
     }
 
-}
 
-#[tokio::main(worker_threads = 10)]
-async fn get_termos() -> Vec<Termo> {
-    let body = reqwest::get("http://127.0.0.1:3000/termos").await.unwrap().json::<Vec<Termo>>().await.unwrap();
-    print!("{:?}", body.clone()); 
-    body
-}
 
-#[tokio::main(worker_threads = 10)]
-async fn atender_termo(id: i64) {
-    let url = format!("http://127.0.0.1:3000/termos/{}/status", id);
-    let cli = Client::new();
-    let mut new = Termo::new();
-    new.status = Status::ATENDIDO;
-    new.user = 1234;
-    let _ = cli.put(url).json(&new).send().await.unwrap();
-    println!("this works?");
 }
-
 
 fn view(state: &State) -> Element<'_, Message> {
     let button = button(text("pesquisar")).on_press(Message::GetFetch);
     let dt = iter_data(state);
+    let setores = [
+        Setor::FISC, 
+        Setor::SUG,
+    ];
+    let receba = pick_list(state.filtro, Some(&setores), Setor::to_string).on_select(Message::GetNew).padding(5);
 
-        let interface = column![button, dt].into();
+        let interface = scrollable(column![button, receba, dt]).into();
         interface
 
 }

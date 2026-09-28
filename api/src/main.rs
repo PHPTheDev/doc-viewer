@@ -1,4 +1,4 @@
-use axum::{routing::{post, get, delete, put}, Router};
+use axum::{routing::{post, get, delete, put, patch}, Router};
 use http::{Request, Response, Method, header};
 use tower_http::trace::TraceLayer;
 use tower_http::cors::{Any, CorsLayer};
@@ -21,7 +21,8 @@ async fn main() {
                       .route("/", post(termos::serializer::json))
                       .route("/termos/{id}", get(termos::routes::get_termo).delete(termos::routes::delete_termo))
                       .route("/termos", get(termos::routes::get_termos))
-                      .route("/termos/{id}/status", put(termos::routes::put_termo))
+                      .route("/termos/{id}/status", patch(termos::routes::atende_termo))
+                      .route("/termos/{setor}", get(termos::routes::filtrar_setor))
 
                       .route("/newUser",post(users::routes::new_user))
                       .route("/checkUser",post(users::routes::check_user))
