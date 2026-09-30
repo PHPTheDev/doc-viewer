@@ -6,7 +6,7 @@ use std::fmt;
 
 use crate::users::models::User;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Termo {
     pub id: i64,
 	pub nome: String,
@@ -30,7 +30,7 @@ impl Termo {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Setor {
 	TI,
 	SUG,
@@ -50,8 +50,8 @@ pub enum Setor {
 impl Setor {
     pub fn as_str(&self) -> String{
         match self {
-            Setor::FISC => String::from("Fisc"),
-            Setor::SUG => String::from("Sugesp"),
+            Setor::FISC => String::from("FISC"),
+            Setor::SUG => String::from("SUG"),
             // Setor::TI
             // Setor::STM
             // Setor::SA
@@ -66,8 +66,8 @@ impl Setor {
 
     pub fn parse(value: String) -> Self {
         match value {
-            value if value == "Fisc".to_string() => Setor::FISC,
-            value if value == "Sugesp".to_string() => Setor::SUG,
+            value if value == "FISC".to_string() => Setor::FISC,
+            value if value == "SUG".to_string() => Setor::SUG,
             _ => Setor::default(),
         }
     }
