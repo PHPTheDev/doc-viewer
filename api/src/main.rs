@@ -22,7 +22,7 @@ async fn main() {
                       .route("/termos/{id}", get(termos::routes::get_termo).delete(termos::routes::delete_termo))
                       .route("/termos", get(termos::routes::get_termos))
                       .route("/termos/{id}/status", patch(termos::routes::atende_termo))
-                      .route("/termos/{setor}", get(termos::routes::filtrar_setor))
+                      //.route("/termos/{setor}", get(termos::routes::filtrar_setor))
 
                       .route("/newUser",post(users::routes::new_user))
                       .route("/checkUser",post(users::routes::check_user))

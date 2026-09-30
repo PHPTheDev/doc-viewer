@@ -1,5 +1,5 @@
 use iced::Task;
-use iced::widget::{Column, text, column, button, scrollable, pick_list};
+use iced::widget::{Column, button, column, container, keyed_column, pick_list, scrollable, text};
 use iced::Element;
 use reqwest::{Client, Body};
 use api_models::termos::models::{Setor, Status, Termo};
@@ -17,7 +17,7 @@ enum Message {
     //GetFetched(String),
 }
 
-#[derive(Default, PartialEq, Clone)]
+#[derive(Default, /*PartialEq,*/ Clone)]
 struct State {
     data: Vec<Termo>,
     filtro: Option<Setor>,
@@ -66,9 +66,18 @@ fn view(state: &State) -> Element<'_, Message> {
         Setor::FISC, 
         Setor::SUG,
     ];
-    let receba = pick_list(state.filtro, Some(&setores), Setor::to_string).on_select(Message::GetNew).padding(5);
+    let termos_get = 
+    keyed_column(state.data.iter().enumerate().map(|(i,termo)| (i, text!("Nome: {0} Setor: {1}", termo.nome, termo.setor).into())));
 
-        let interface = scrollable(column![button, receba, dt]).into();
+
+   
+    let container = container(termos_get).style(container::rounded_box).height(400).width(400);
+    //let receba = pick_list(state.filtro, Some(&setores), Setor::to_string).on_select(Message::GetNew).padding(5);
+
+        let interface = 
+        scrollable(
+            column![button, /*receba,*/ dt, container])
+        .into();
         interface
 
 }

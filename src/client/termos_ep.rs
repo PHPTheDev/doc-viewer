@@ -1,4 +1,5 @@
 use api_models::termos::models::{Setor, Status, Termo};
+use iced::widget::{Container, text};
 use reqwest::{Client, Body};
 
 #[tokio::main(worker_threads = 10)]
@@ -26,6 +27,8 @@ pub async fn filtro_termos(setor: Setor) -> Vec<Termo> {
     print!("{:?}", body.clone()); 
     body
 }
+
+
 
 
 
