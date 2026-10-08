@@ -1,11 +1,15 @@
-use sqlite::{Connection, State};
 use axum::Json;
 use axum::response::Response;
-use axum::extract::Path;
+use axum::extract::{State, Path};
 use pdfrs::pdf_generator::PageLayout;
 use pdfrs::builder::PdfBuilder;
-//use crate::termos::models::{ Setor, Status, Termo, termo_pdf};
 use api_models::termos::models::{Setor, Status, Termo};
+use http::StatusCode;
+use sqlx::Row;
+
+use crate::pool::ApiState;
+
+// type Result<T> = Result<T, sqlx::Error>
 
 pub async fn termo_pdf(i: &Termo) -> Vec<u8>  {
     PdfBuilder::new()
@@ -15,136 +19,153 @@ pub async fn termo_pdf(i: &Termo) -> Vec<u8>  {
     .add_paragraph(format!("nome={}, rf={}, setor={:?}",i.nome,i.rf,i.setor).as_str())
     .build_bytes()
     .unwrap()
-
-
 }
 
+pub async fn create_termo(State(state): State<ApiState>, Json(payload): Json<Termo>) -> Result<StatusCode, StatusCode> {
 
-//#[axum::debug_handler]
-pub async fn get_termos() -> Json<Vec<Termo>> {
-    let connection = sqlite::open("teste.db").unwrap();
-    let query = format!("SELECT * FROM teste");
-    let mut statement = connection.prepare(query).unwrap();
-    let mut new = vec![];
-    while let Ok(State::Row) = statement.next() {
-        let id = statement.read::<i64, _>("id").unwrap();
-        let nome = statement.read::<String, _>("nome").unwrap();
-        let rf = statement.read::<String, _>("rf").unwrap();
-        let setor = Setor::parse(statement.read::<String, _>("setor").unwrap());      
-        let data = statement.read::<String, _>("data").unwrap();
-        let qtd = statement.read::<i64, _>("qtd").unwrap();
-        let status = Status::parse(statement.read::<String, _>("status").unwrap());
-        let user = statement.read::<i64, _>("user").unwrap();
+    let pdf = termo_pdf(&payload).await;
+    let query = sqlx::query(
+        "INSERT INTO teste (nome,rf,data,qtd,setor,status,pdf,user) 
+        VALUES ($1, $2, $3, $4,'{:?}','{:?}','{:?}', '{}')"
+    )
+        .bind(payload.nome)
+        .bind(payload.rf)   
+        .bind(payload.data)
+        .bind(payload.qtd)
+        .bind(payload.setor.as_str())
+        .bind(payload.status.as_str())
+        .bind(pdf)
+        .bind(payload.user);
 
-        let termo = Termo {
-            id:id,
-            nome: nome,
-		    rf: rf,
-            data: data,
-		    setor: setor,
-            qtd: qtd,
-            status: status,
-            user: user,
-		};
+    let result = query.execute(&state.connection.unwrap()).await;
 
-        new.push(termo)
+    match result {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(e) => Err(StatusCode::BAD_REQUEST), 
+    }
+    //pdf
+}
+
+#[axum::debug_handler]
+pub async fn get_termos(State(state): State<ApiState>) -> Result<Json<Vec<Termo>>, StatusCode> {
+
+    let query = sqlx::query("SELECT * FROM teste");
+
+    let rows = query.fetch_all(&state.connection.unwrap()).await;
+
+    let results  = match rows {
+        Ok(r) => r,
+        Err(_) => return Err(StatusCode::NOT_FOUND), 
     };
 
-    Json(new)
+    let termos: Vec<Termo> = results.iter().map(|row| {
+        Termo {
+            id: row.get::<i64, _>("id"),
+            nome: row.get::<String, _>("nome"),
+		    rf: row.get::<String, _>("rf"),
+            data: row.get::<String, _>("data"),
+		    setor: Setor::parse(row.get::<String, _>("setor")),
+            qtd: row.get::<i64, _>("qtd"),
+            status: Status::parse(row.get::<String, _>("status")),
+            user: row.get::<i64, _>("user"),
+		}
+    }).collect();
 
+    Ok(Json(termos))
 }
 
-pub async fn get_termo(Path(user_id): Path<i64>) -> Json<Termo> {
-    let connection = sqlite::open("teste.db").unwrap();
-    let query = format!("SELECT * FROM teste WHERE id = ?");
-    let mut statement = connection.prepare(query).unwrap();
-    statement.bind((1, user_id)).unwrap();
-    let mut rec = Termo::default();
+pub async fn get_termo(State(state): State<ApiState>, Path(id): Path<i64>) -> Result<Json<Termo>, StatusCode> {
 
-    while let Ok(State::Row) = statement.next() {
-        println!("nome = {}", statement.read::<String, _>("nome").unwrap());
-        println!("nome = {}", statement.read::<String, _>("rf").unwrap());
-        println!("nome = {}", statement.read::<String, _>("setor").unwrap());
-        rec = Termo {
-            id: statement.read::<i64, _>("id").unwrap(),
-            nome: statement.read::<String, _>("nome").unwrap(),
-            rf: statement.read::<String, _>("rf").unwrap(),
-            setor: Setor::parse(statement.read::<String, _>("setor").unwrap()),
-            data: statement.read::<String, _>("data").unwrap(),
-            qtd: statement.read::<i64, _>("qtd").unwrap(),
-            status: Status::parse(statement.read::<String, _>("status").unwrap()),
-            user: statement.read::<i64, _>("user").unwrap(),
+    let query = sqlx::query("SELECT * FROM teste WHERE id = $1").bind(id);
+    
+    // let mut rec = Termo::default();
+    let rows = query.fetch_one(&state.connection.unwrap()).await;
 
-        };
-
+    let row = match rows {
+        Ok(r) => r,
+        Err(_) => return Err(StatusCode::NOT_FOUND), 
     };
-        Json(rec)   
+        
+    let rec = Termo {
+        id: row.get::<i64, _>("id"),
+        nome: row.get::<String, _>("nome"),
+        rf: row.get::<String, _>("rf"),
+        data: row.get::<String, _>("data"),
+        setor: Setor::parse(row.get::<String, _>("setor")),
+        qtd: row.get::<i64, _>("qtd"),
+        status: Status::parse(row.get::<String, _>("status")),
+        user: row.get::<i64, _>("user"),
+    };
+    Ok(Json(rec))   
 
 }
 
-pub async fn atende_termo(Path(user_id): Path<i64>, Json(status): Json<Status>) {
+pub async fn atende_termo(
+    State(state): State<ApiState>, 
+    Path(id): Path<i64>, 
+    Json(status): Json<Status>
+) -> Result<StatusCode, StatusCode>{
 
-    let connection = sqlite::open("teste.db").unwrap();
-    let query = format!("UPDATE teste SET status = '{}' FROM teste as t WHERE t.id = {}", status.as_str(), user_id);
-    // let mut statement = connection.prepare(query).unwrap();
-    //statement.bind((1, status)).unwrap();
+    let query = sqlx::query(
+        "UPDATE teste SET status = $1 
+        FROM teste as t 
+        WHERE t.id = $2"
+    )
+        .bind(status.as_str())
+        .bind(id);
+    
+    let result = query.execute(&state.connection.unwrap()).await;
 
-
-    connection.execute(query).unwrap();
-
-        Response::builder()
-        .status(200)
-        .header("X-Custom-Foo", "Bar")
-        .body(())
-        .unwrap();
-
+    match result {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(e) => Err(StatusCode::BAD_REQUEST), 
+    }
 }
 
-pub async fn delete_termo(Path(user_id): Path<i64>) {
-    let connection = sqlite::open("teste.db").unwrap();
-    let query = format!("DELETE FROM teste WHERE id = {}", user_id);
-    connection.execute(query).unwrap();
+pub async fn delete_termo(
+    State(state): State<ApiState>, 
+    Path(id): Path<i64>
+) -> Result<StatusCode, StatusCode>{
 
-    Response::builder()
-    .status(200)
-    .header("X-Custom-Foo", "Bar")
-    .body(())
-    .unwrap();
+    let query = sqlx::query(
+        "DELETE FROM teste WHERE id = $1"
+    )
+        .bind(id);
+    
+    let result = query.execute(&state.connection.unwrap()).await;
+
+    match result {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(e) => Err(StatusCode::BAD_REQUEST), 
+    }
 }
 
-pub async fn filtrar_setor(Path(setor): Path<String>) -> Json<Vec<Termo>> {
-    let connection = sqlite::open("teste.db").unwrap();
-    let query = format!("SELECT * FROM teste WHERE setor = ?");
-    let mut statement = connection.prepare(query).unwrap();
-    statement.bind((1,setor.as_str())).unwrap();
-    let mut new = vec![];
-    while let Ok(State::Row) = statement.next() {
-        let id = statement.read::<i64, _>("id").unwrap();
-        let nome = statement.read::<String, _>("nome").unwrap();
-        let rf = statement.read::<String, _>("rf").unwrap();
-        let setor = Setor::parse(statement.read::<String, _>("setor").unwrap());      
-        let data = statement.read::<String, _>("rf").unwrap();
-        let qtd = statement.read::<i64, _>("rf").unwrap();
-        let status = Status::parse(statement.read::<String, _>("status").unwrap());
-        let user = statement.read::<i64, _>("user").unwrap();
+pub async fn filtrar_setor(State(state): State<ApiState>, Path(setor): Path<String>) -> Result<Json<Vec<Termo>>, StatusCode> {
+    let query = sqlx::query(
+        "SELECT * FROM teste WHERE setor = $1"
+    )
+        .bind(setor);
 
-        let termo = Termo {
-                id: id,
-                nome: nome,
-                rf: rf,
-                data: data,
-                setor: setor,
-                qtd: qtd,
-                status: status,
-                user: user,
-        };
+    let rows = query.fetch_all(&state.connection.unwrap()).await;
 
-        new.push(termo)
+    let results  = match rows {
+        Ok(r) => r,
+        Err(_) => return Err(StatusCode::NOT_FOUND), 
     };
 
-    Json(new)
+    let termos: Vec<Termo> = results.iter().map(|row| {
+        Termo {
+            id: row.get::<i64, _>("id"),
+            nome: row.get::<String, _>("nome"),
+            rf: row.get::<String, _>("rf"),
+            data: row.get::<String, _>("data"),
+            setor: Setor::parse(row.get::<String, _>("setor")),
+            qtd: row.get::<i64, _>("qtd"),
+            status: Status::parse(row.get::<String, _>("status")),
+            user: row.get::<i64, _>("user"),
+        }
+    }).collect();
 
-
-
+    Ok(Json(termos))
 }
 

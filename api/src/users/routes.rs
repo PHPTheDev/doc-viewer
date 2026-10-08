@@ -1,70 +1,74 @@
-use sqlite::State;
+
 use axum::Json;
-use axum::extract::Path;
-//use crate::users::models::User;
+use axum::extract::{State, Path};
 use api_models::users::models::User;
-use axum::response::Response;
+use axum::response::{IntoResponse, Response};
+use http::StatusCode;
+use sqlx::Row;
 
-pub async fn new_user(Json(payload):Json<User>) {
-    let connection = sqlite::open("teste.db").unwrap();
-    let query = format!("INSERT INTO users (rf, senha, is_admin) VALUES ('{}','{}', '{}')",payload.rf, payload.senha, payload.is_admin);
-    connection.execute(
-    "CREATE TABLE IF NOT EXISTS users (
-            rf INTEGER PRIMARY KEY,
-            senha TEXT,
-            is_admin INTEGER 
-            );").unwrap();
-    connection.execute(query).unwrap();
+use crate::pool::ApiState;
 
-}
+pub async fn new_user(State(state): State<ApiState>, Json(payload): Json<User>) -> Result<StatusCode, StatusCode>{
+    
+    let query = sqlx::query(
+        "INSERT INTO user (rf, senha, is_admin) VALUES ($1, $2, $3)"
+    )
+        .bind(payload.rf)
+        .bind(payload.senha)
+        .bind(payload.is_admin);
 
-pub async fn delete_user(Path(user_id):Path<i64>) {
-    let con = sqlite::open("teste.db").unwrap();
-    let query = format!("DELETE FROM users WHERE rf = {}", user_id);
-    con.execute(query).unwrap();
+    let result = query.execute(&state.connection.unwrap()).await;
 
-    Response::builder()
-    .status(200)
-    .header("X-Custom-Foo", "Bar")
-    .body(())
-    .unwrap();
-}
-
-pub async fn put_user(Path(user_id):Path<i64>, Json(payload):Json<User>){
-    let con = sqlite::open("teste.db").unwrap();
-    let query = format!("UPDATE users SET rf = {}, senha = '{}', is_admin = {} FROM users as u WHERE u.rf = {}", 
-        payload.rf,
-        payload.senha,
-        payload.is_admin,
-        user_id
-    );
-    con.execute(query).unwrap();
-
-    Response::builder()
-    .status(200)
-    .header("X-Custom-Foo", "Bar")
-    .body(())
-    .unwrap();
+    match result {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
 
 }
 
-pub async fn check_user(Json(payload):Json<User>) {
-    let connection = sqlite::open("teste.db").unwrap();
-    let query = format!("SELECT * FROM users WHERE rf = ?");
-    let mut statement = connection.prepare(query).unwrap();
-    statement.bind((1,payload.rf)).unwrap();
+pub async fn delete_user(State(state): State<ApiState>,Path(user_id):Path<i64>) -> Result<StatusCode, StatusCode> {
+    let query = sqlx::query("DELETE FROM user WHERE rf = $1").bind(user_id);
+    let result = query.execute(&state.connection.unwrap()).await;
 
-    while let Ok(State::Row) = statement.next() {
-        let senha = statement.read::<String, _>("senha").unwrap();
+    match result {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
 
-       if senha == payload.senha {
-            println!("certo")
-       }
-       else{
-            println!("errado");
+pub async fn put_user(State(state): State<ApiState>, Path(user_id):Path<i64>, Json(payload):Json<User>) -> Result<StatusCode, StatusCode>{
+    let query = sqlx::query("UPDATE user SET rf = $1, senha = $2, is_admin = $3 FROM user as u WHERE u.rf = $4") 
+        .bind(payload.rf)
+        .bind(payload.senha)
+        .bind(payload.is_admin)
+        .bind(user_id);
+    let result = query.execute(&state.connection.unwrap()).await;
 
-        }
+    match result {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(_) => Err(StatusCode::BAD_REQUEST),        
+    }
+}
 
+pub async fn check_user(State(state): State<ApiState>, Json(sen): Json<String>, Path(rf): Path<i64>) -> impl IntoResponse {
+    let query = sqlx::query("SELECT * FROM user WHERE rf = $1").bind(rf);
+    let fetch = query.fetch_one(&state.connection.unwrap()).await;
+    
+
+    let result = match fetch {
+        Ok(r) => r,
+        Err(_) => return Err(StatusCode::BAD_REQUEST),
+    };
+
+    let senha = result.get::<String, _>("senha");
+
+    if senha == sen {
+        //println!("certo");
+        Ok(StatusCode::OK)
+    }
+    else {
+        //println!("errado");
+        Err(StatusCode::BAD_REQUEST)
     }
 }  
 
