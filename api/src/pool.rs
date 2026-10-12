@@ -1,34 +1,27 @@
-use sqlx::sqlite::SqlitePool;
-use sqlx::Error;
+use std::str::FromStr;
 
-pub async fn setPool(url: &str) -> Result<SqlitePool, Error> {
-	let pool = sqlx::sqlite::SqlitePool::connect(url).await?;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePool, SqlitePoolOptions};
+use sqlx::{ConnectOptions};
 
-	Ok(pool)
-}
 
 #[derive(Clone)]
 pub struct ApiState {
-	pub connection: Option<SqlitePool>,
+	pub connection: SqlitePool,
 }
 
 impl ApiState {
-	pub fn new() -> Self {
-		Self {
-			connection: None,  
-		}
-	}
+	pub async fn new() -> Result<Self, Box<dyn std::error::Error>> {
+        let db_options = SqliteConnectOptions::from_str("sqlite:data.db")?
+        .create_if_missing(true)
+        .disable_statement_logging()
+        .to_owned();
 
-	pub async fn db_connection(&mut self, url: &str) {
-		let con = setPool(url).await;
+        let connection = SqlitePoolOptions::new().connect_with(db_options).await?;
 
-		let res = match con {
-			Ok(c) => Some(c),
-			Err(_e) => None,
-		};
-		println!("receba");
-		self.connection = res
-	}
 
+        Ok(Self {connection}) 
+
+
+  }
 
 }
