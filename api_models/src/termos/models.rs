@@ -30,8 +30,9 @@ impl Termo {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Setor {
+  All,
 	TI,
 	SUG,
 	STM,
@@ -50,24 +51,26 @@ pub enum Setor {
 impl Setor {
     pub fn as_str(&self) -> String{
         match self {
-            Setor::FISC => String::from("Fisc"),
-            Setor::SUG => String::from("Sugesp"),
-            // Setor::TI
-            // Setor::STM
-            // Setor::SA
-            // Setor::GL
-            // Setor::SAS
-            // Setor::GAB
-            // Setor::CPO
-            // setor
+            Setor::FISC => String::from("FISC"),
+            Setor::SUG => String::from("SUG"),
+            Setor::TI => String::from("TI"),
+            Setor::STM => String::from("STM"), 
+            Setor::SA => String::from("SA"), 
+            Setor::GAB => String::from("GAB"), 
+            Setor::CPO => String::from("CPO"),
+            Setor::UNAI => String::from("UNAI"),
+            Setor::STF => String::from("STF"),
+            Setor::CAF => String::from("CAF"),
+            Setor::SUSL => String::from("SUSL"),
             _ => "setor invalido ou nn colocado".to_string(),
         }
     }
 
     pub fn parse(value: String) -> Self {
         match value {
-            value if value == "Fisc".to_string() => Setor::FISC,
-            value if value == "Sugesp".to_string() => Setor::SUG,
+            value if value == "FISC".to_string() => Setor::FISC,
+            value if value == "SUG".to_string() => Setor::SUG,
+            value if value == "TI".to_string() => Setor::TI,
             _ => Setor::default(),
         }
     }
@@ -80,6 +83,7 @@ impl Setor {
 impl Display for Setor {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {  
         match self {
+            Setor::All => write!(f, "Todos"),
             Setor::FISC => write!(f, "Fisc"),
             Setor::SUG => write!(f, "Sugesp"), 
             _ => write!(f, "TI"),  

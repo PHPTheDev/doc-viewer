@@ -1,12 +1,25 @@
 use api_models::termos::models::{Setor, Status, Termo};
-use iced::widget::{Container, text};
-use reqwest::{Client, Body};
+use iced::time;
+use reqwest::{Client, StatusCode};
+use crate::FetchError;
 
-#[tokio::main(worker_threads = 10)]
-pub async fn get_termos() -> Vec<Termo> {
-    let body = reqwest::get("http://127.0.0.1:3000/termos").await.unwrap().json::<Vec<Termo>>().await.unwrap();
-    print!("{:?}", body.clone()); 
-    body
+// #[tokio::main(worker_threads = 10)]
+pub async fn get_termos() -> Result<Vec<Termo>, FetchError> {
+    let response = reqwest::get("http://127.0.0.1:3000/termos").await;
+    
+    let res = match response {
+        Ok(res) => res,
+        Err(err) => return Err(FetchError::Request(err.status())),
+    };
+
+    let body = res.json::<Vec<Termo>>().await;
+
+    match body {
+        Ok(b) => Ok(b),
+        Err(err) => Err(FetchError::Request(err.status())),
+    }
+
+    /*.unwrap().json::<Vec<Termo>>().await.unwrap();*/
 }
 
 #[tokio::main(worker_threads = 10)]
@@ -22,7 +35,7 @@ pub async fn atender_termo(id: i64) {
 
 #[tokio::main(worker_threads = 10)]
 pub async fn filtro_termos(setor: Setor) -> Vec<Termo> {
-	let url = format!("http://127.0.0.1:3000/termos/{}", setor.as_str());
+	let url = format!("http://127.0.0.1:3000/filtrar/{}", setor.as_str());
     let body = reqwest::get(url).await.unwrap().json::<Vec<Termo>>().await.unwrap();
     print!("{:?}", body.clone()); 
     body

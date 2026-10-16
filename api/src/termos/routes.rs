@@ -123,8 +123,8 @@ pub async fn filtrar_setor(Path(setor): Path<String>) -> Json<Vec<Termo>> {
         let nome = statement.read::<String, _>("nome").unwrap();
         let rf = statement.read::<String, _>("rf").unwrap();
         let setor = Setor::parse(statement.read::<String, _>("setor").unwrap());      
-        let data = statement.read::<String, _>("rf").unwrap();
-        let qtd = statement.read::<i64, _>("rf").unwrap();
+        let data = statement.read::<String, _>("data").unwrap();
+        let qtd = statement.read::<i64, _>("qtd").unwrap();
         let status = Status::parse(statement.read::<String, _>("status").unwrap());
         let user = statement.read::<i64, _>("user").unwrap();
 
