@@ -10,13 +10,13 @@ mod data;
 mod widgets;
 use crate::data::state::{State};
 use crate::client::termos_ep::{get_termos, atender_termo, filtro_termos};
-use crate::widgets::adm::{MessageAdm, Adm};
-// use crate::widgets::menu::main_menu;
-// use crate::widgets::termo::termo;
-use crate::widgets::login::{MessageLogin, Login};
-use crate::widgets::pedidos::{MessagePedidos, Pedidos};
-use crate::widgets::pages::{Action, Page};
+use crate::widgets::pages::adm::{MessageAdm, Adm};
+use crate::widgets::pages::login::{MessageLogin, Login};
+use crate::widgets::pages::pedidos::{MessagePedidos, Pedidos};
+use crate::widgets::pages::config::{MessageConfig, Config};
+use crate::widgets::pages::pages::{Action, Page};
 use crate::widgets::menu::main_menu;
+use crate::data::user::savedSettings::SaveError;
 
 enum App{
     Login(Login),
@@ -35,9 +35,13 @@ enum Message {
     ChangePage(String),
     ReFetch(Instant),
     Data(Result<Vec<Termo>, FetchError>),
+    Saved(Result<(), SaveError>),
+
+
     PagPedidos(MessagePedidos),
     PagAdm(MessageAdm),
-    PagLogin(MessageLogin)
+    PagLogin(MessageLogin),
+    PagConfig(MessageConfig)
 }
 
 #[derive(Debug, Clone)]
@@ -62,7 +66,8 @@ impl App {
                     Message::Fetched(Ok(state)) => {
                         *self = App::Main(Main {load: state, op: String::from("Pedidos"),page: HashMap::from([
                                 (String::from("Pedidos"), Box::new(Pedidos::new()) as Box<dyn Page>),
-                                (String::from("Adm"), Box::new(Adm::new()) as Box<dyn Page>)
+                                (String::from("Adm"), Box::new(Adm::new()) as Box<dyn Page>),
+                                (String::from("Config"), Box::new(Config::new()) as Box<dyn Page>)
                                 ])
                         });
                         
@@ -101,13 +106,24 @@ impl App {
             }
         }
     }
+
+    fn theme(&self) -> iced::Theme {
+        match self {
+            App::Login(l) => iced::Theme::Light,
+            App::Main(m) => {
+                m.load.settings.settings.theme.clone()//.unwrap_or(iced::Theme::Light)
+            } 
+        }
+    }
 }
 
 impl Main {
     fn update(&mut self, message: Message) -> Task<Message> {
         match message {
-            // global messages, handled for every page
-            Message::ReFetch(_) => Task::perform(State::set_state(), Message::Fetched),
+            Message::ReFetch(_) => {
+                print!("tong");
+                Task::none()
+            }
             Message::Fetched(Ok(state)) => {
                 self.load = state;
                 Task::none()
@@ -120,8 +136,10 @@ impl Main {
                 self.op = p;
                 Task::none()
             }
+            Message::Saved(_result) => {
+                Task::none()
+            }
 
-            // everything else goes to the current page
             other => {
                 let page = self.page.get_mut(&self.op);
 
@@ -160,6 +178,7 @@ fn application() -> Application<impl Program<Message = Message, Theme = Theme>> 
     iced::application(App::new, App::update, App::view)
         .title("receba")
         .subscription(App::subscription)
+        .theme(App::theme)
 }
 
 pub fn main() -> iced::Result {

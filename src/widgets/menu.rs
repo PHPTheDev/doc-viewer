@@ -20,6 +20,7 @@ pub fn main_menu(curr_op: &String) -> Element<'_, Message> {
     row![
         menu_button("Pedidos", "Pedidos".to_string(), curr_op.clone()),
         menu_button("Adm", "Adm".to_string(), curr_op.clone()),
+        menu_button("Config", "Config".to_string(), curr_op.clone()),
         // menu_button("Config", MenuOptions::Config, curr_op.clone()),
     ]
         .spacing(20)

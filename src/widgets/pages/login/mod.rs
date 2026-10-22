@@ -34,7 +34,7 @@ impl Login {
                 Task::none()
             }
             MessageLogin::ButtonPressed => {
-                Task::perform(State::set_state(), Message::Fetched)
+                Task::perform(State::set_state(self.rf.clone()), Message::Fetched)
             }
         }
     }
