@@ -40,6 +40,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             "/users/{id}",
             patch(users::routes::put_user).delete(users::routes::delete_user),
         )
+        .route("/chkUser/{rf}", post(users::routes::check_user))
         //.route("/filtrar/{setor}",post(termos::routes::filtrar_setor))
         .layer(Extension(state))
         .layer(ServiceBuilder::new().layer(cors));
