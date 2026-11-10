@@ -1,74 +1,67 @@
 //#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::fmt;
-use std::fmt::Display;
 use std::string::String;
+use std::fmt::Display;
+use std::fmt;
 
 use crate::users::models::User;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Termo {
     pub id: i64,
-    pub nome: String,
+	pub nome: String,
     pub rf: String,
-    pub data: String,
-    pub qtd: i64,
-    pub setor: Setor,
+	pub data: String,
+	pub qtd: i64,
+	pub setor: Setor,
     pub status: Status,
     pub user: i64,
 }
 
 impl Default for Termo {
     fn default() -> Self {
-        Self::new()
-    }
+        Self::new() 
+    } 
 }
 
 impl Termo {
     pub fn new() -> Termo {
-        Termo {
-            id: Default::default(),
-            nome: String::new(),
-            rf: String::new(),
-            data: String::new(),
-            qtd: Default::default(),
-            setor: Setor::TI,
-            status: Status::PENDENTE,
-            user: Default::default(),
-        }
+        Termo { id: Default::default(), nome: String::new(), rf: String::new(),data: String::new(), qtd: Default::default(), setor: Setor::TI, status: Status::PENDENTE ,user: Default::default(), }
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Setor {
-    TI,
-    SUG,
-    STM,
-    SAS,
-    SA,
-    GL,
-    GAB,
-    CPO,
-    STF,
-    SUSL,
-    UNAI,
-    CAF,
-    FISC,
+  All,
+	TI,
+	SUG,
+	STM,
+	SAS,
+	SA,
+	GL,
+	GAB,
+	CPO,
+	STF,
+	SUSL,
+	UNAI,
+	CAF,
+	FISC,
 }
 
 impl Setor {
-    pub fn as_str(&self) -> String {
+    pub fn as_str(&self) -> String{
         match self {
             Setor::FISC => String::from("FISC"),
             Setor::SUG => String::from("SUG"),
-            // Setor::TI
-            // Setor::STM
-            // Setor::SA
-            // Setor::GL
-            // Setor::SAS
-            // Setor::GAB
-            // Setor::CPO
-            // setor
+            Setor::TI => String::from("TI"),
+            Setor::STM => String::from("STM"), 
+            Setor::SA => String::from("SA"), 
+            Setor::GAB => String::from("GAB"), 
+            Setor::CPO => String::from("CPO"),
+            Setor::UNAI => String::from("UNAI"),
+            Setor::STF => String::from("STF"),
+            Setor::CAF => String::from("CAF"),
+            Setor::SUSL => String::from("SUSL"),
             _ => "setor invalido ou nn colocado".to_string(),
         }
     }
@@ -77,6 +70,7 @@ impl Setor {
         match value {
             value if value == "FISC".to_string() => Setor::FISC,
             value if value == "SUG".to_string() => Setor::SUG,
+            value if value == "TI".to_string() => Setor::TI,
             _ => Setor::default(),
         }
     }
@@ -87,11 +81,12 @@ impl Setor {
 }
 
 impl Display for Setor {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {  
         match self {
+            Setor::All => write!(f, "Todos"),
             Setor::FISC => write!(f, "Fisc"),
-            Setor::SUG => write!(f, "Sugesp"),
-            _ => write!(f, "TI"),
+            Setor::SUG => write!(f, "Sugesp"), 
+            _ => write!(f, "TI"),  
         }
     }
 }
@@ -107,12 +102,13 @@ pub enum Status {
     PENDENTE,
     ATENDIDO,
     RECUSADO,
-}
+} 
 
 impl Status {
-    pub fn as_str(&self) -> &str {
+
+    pub fn as_str(&self) -> &str{
         match self {
-            Status::PENDENTE => "Pendente",
+            Status::PENDENTE => "Pendente", 
             Status::ATENDIDO => "Atendido",
             Status::RECUSADO => "Recusado",
         }
