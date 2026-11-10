@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS user (
+	rf INTEGER PRIMARY KEY,
+	senha TEXT,
+	is_admin INTEGER 
+);

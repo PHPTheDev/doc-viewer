@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 serde = { version = "1.0.229", features = ["derive"] }
+sqlx = "0.9.0"
 
 [lib]
 name = "api_models"

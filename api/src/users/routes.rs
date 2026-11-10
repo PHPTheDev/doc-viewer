@@ -1,73 +1,93 @@
-use sqlite::State;
-use axum::Json;
-use axum::extract::Path;
-//use crate::users::models::User;
+use std::sync::Arc;
+
+use crate::pool::ApiState;
 use api_models::users::models::User;
-use axum::response::Response;
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use axum::extract::Path;
+use axum::response::IntoResponse;
+use axum::{Extension, Json};
+use http::StatusCode;
+use sqlx::Row;
 
-pub async fn new_user(Json(payload):Json<User>) {
-    let connection = sqlite::open("teste.db").unwrap();
-    let query = format!("INSERT INTO users (rf, senha, is_admin) VALUES ('{}','{}', '{}')",payload.rf, payload.senha, payload.is_admin);
-    connection.execute(
-    "CREATE TABLE IF NOT EXISTS users (
-            rf INTEGER PRIMARY KEY,
-            senha TEXT,
-            is_admin INTEGER 
-            );").unwrap();
-    connection.execute(query).unwrap();
+pub async fn new_user(
+    Extension(state): Extension<Arc<ApiState>>,
+    Json(payload): Json<User>,
+) -> Result<StatusCode, StatusCode> {
+    let hash = Argon2::default()
+        .hash_password(payload.senha.as_bytes())
+        .unwrap()
+        .to_string();
 
-}
+    let query = sqlx::query("INSERT INTO user (rf, senha, is_admin) VALUES ($1, $2, $3)")
+        .bind(payload.rf)
+        .bind(hash)
+        .bind(payload.is_admin);
 
-pub async fn delete_user(Path(user_id):Path<i64>) {
-    let con = sqlite::open("teste.db").unwrap();
-    let query = format!("DELETE FROM users WHERE rf = {}", user_id);
-    con.execute(query).unwrap();
+    let result = query.execute(&state.connection).await;
 
-    Response::builder()
-    .status(200)
-    .header("X-Custom-Foo", "Bar")
-    .body(())
-    .unwrap();
-}
-
-pub async fn put_user(Path(user_id):Path<i64>, Json(payload):Json<User>){
-    let con = sqlite::open("teste.db").unwrap();
-    let query = format!("UPDATE users SET rf = {}, senha = '{}', is_admin = {} FROM users as u WHERE u.rf = {}", 
-        payload.rf,
-        payload.senha,
-        payload.is_admin,
-        user_id
-    );
-    con.execute(query).unwrap();
-
-    Response::builder()
-    .status(200)
-    .header("X-Custom-Foo", "Bar")
-    .body(())
-    .unwrap();
-
-}
-
-pub async fn check_user(Json(payload):Json<User>) {
-    let connection = sqlite::open("teste.db").unwrap();
-    let query = format!("SELECT * FROM users WHERE rf = ?");
-    let mut statement = connection.prepare(query).unwrap();
-    statement.bind((1,payload.rf)).unwrap();
-
-    while let Ok(State::Row) = statement.next() {
-        let senha = statement.read::<String, _>("senha").unwrap();
-
-       if senha == payload.senha {
-            println!("certo")
-       }
-       else{
-            println!("errado");
-
-        }
-
+    match result {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
     }
-}  
+}
 
+pub async fn delete_user(
+    Extension(state): Extension<Arc<ApiState>>,
+    Path(user_id): Path<i64>,
+) -> Result<StatusCode, StatusCode> {
+    let query = sqlx::query("DELETE FROM user WHERE rf = $1").bind(user_id);
+    let result = query.execute(&state.connection).await;
 
+    match result {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
 
+pub async fn put_user(
+    Extension(state): Extension<Arc<ApiState>>,
+    Path(user_id): Path<i64>,
+    Json(payload): Json<User>,
+) -> Result<StatusCode, StatusCode> {
+    let hash = Argon2::default()
+        .hash_password(payload.senha.as_bytes())
+        .unwrap()
+        .to_string();
 
+    let query = sqlx::query(
+        "UPDATE user SET rf = $1, senha = $2, is_admin = $3 FROM user as u WHERE u.rf = $4",
+    )
+    .bind(payload.rf)
+    .bind(hash)
+    .bind(payload.is_admin)
+    .bind(user_id);
+    let result = query.execute(&state.connection).await;
+
+    match result {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
+
+#[axum::debug_handler]
+pub async fn check_user(
+    Extension(state): Extension<Arc<ApiState>>,
+    Path(rf): Path<i64>,
+    Json(sen): Json<String>,
+) -> impl IntoResponse {
+    let query = sqlx::query("SELECT * FROM user WHERE rf = $1").bind(rf);
+    let fetch = query.fetch_one(&state.connection).await;
+
+    let result = match fetch {
+        Ok(r) => r,
+        Err(_) => return Err(StatusCode::BAD_REQUEST),
+    };
+
+    let senha = result.get::<String, _>("senha");
+    let password_hash = PasswordHash::new(&senha).unwrap();
+
+    match Argon2::default().verify_password(sen.as_bytes(), &password_hash) {
+        Ok(_) => Ok(StatusCode::OK),
+        Err(_) => Err(StatusCode::BAD_REQUEST),
+    }
+}
